@@ -1,0 +1,16 @@
+click==7.1.2
+joblib==0.14.1
+monai==0.1.0
+nibabel==3.1.0
+numpy==1.18.3
+packaging==20.3
+pkg-resources==0.0.0
+pyparsing==2.4.7
+scikit-learn==0.22.2.post1
+scipy==1.4.1
+six==1.14.0
+tensorboard==2.2.1
+torch==1.5.0
+torchvision==0.6.0
+tqdm==4.46.0
+trixi @ git+https://github.com/MIC-DKFZ/trixi
