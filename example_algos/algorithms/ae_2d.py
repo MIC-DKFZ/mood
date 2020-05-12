@@ -1,19 +1,17 @@
 import os
 import sys
 import time
+from math import ceil
 
 import click
 import numpy as np
 import torch
 import torch.distributions as dist
 from torch import optim
+from tqdm import tqdm
 from trixi.logger import PytorchExperimentLogger
 from trixi.util.config import monkey_patch_fn_args_as_config
 from trixi.util.pytorchexperimentstub import PytorchExperimentStub
-from trixi.util.pytorchutils import get_smooth_image_gradient
-from tqdm import tqdm
-from monai.transforms.transforms import Resize
-from math import ceil
 
 from example_algos.data.numpy_dataset import get_numpy2d_dataset, get_numpy3d_dataset
 from example_algos.models.aes import AE
@@ -33,6 +31,7 @@ class AE2D:
         log_dir=None,
         logger="visdom",
         print_every_iter=100,
+        data_dir=None,
     ):
 
         self.print_every_iter = print_every_iter
@@ -41,6 +40,7 @@ class AE2D:
         self.z_dim = z_dim
         self.input_shape = input_shape
         self.logger = logger
+        self.data_dir = data_dir
 
         log_dict = {}
         if logger is not None:
@@ -65,14 +65,10 @@ class AE2D:
     def train(self):
 
         train_loader = get_numpy2d_dataset(
-            base_dir="/fast/moody/brain/train",
-            num_processes=16,
-            pin_memory=True,
-            batch_size=self.batch_size,
-            mode="train",
+            base_dir=self.data_dir, num_processes=16, pin_memory=True, batch_size=self.batch_size, mode="train",
         )
         val_loader = get_numpy2d_dataset(
-            base_dir="/fast/moody/brain/train", num_processes=8, pin_memory=True, batch_size=self.batch_size, mode="val"
+            base_dir=self.data_dir, num_processes=8, pin_memory=True, batch_size=self.batch_size, mode="val"
         )
 
         for epoch in range(self.n_epochs):
@@ -203,6 +199,7 @@ class AE2D:
 )
 @click.option("-t", "--test-dir", type=click.Path(exists=True), required=False, default=None)
 @click.option("-p", "--pred-dir", type=click.Path(exists=True, writable=True), required=False, default=None)
+@click.option("-d", "--data-dir", type=click.Path(exists=True), required=True, default=None)
 @click.command()
 def main(
     mode="pixel",
@@ -219,6 +216,7 @@ def main(
     logger="visdom",
     test_dir=None,
     pred_dir=None,
+    data_dir=None,
 ):
 
     from scripts.evalresults import eval_dir
@@ -235,12 +233,20 @@ def main(
         print_every_iter=print_every_iter,
         load_path=load_path,
         logger=logger,
+        data_dir=data_dir,
     )
 
     if run == "train" or run == "all":
         ae_algo.train()
 
     if run == "predict" or run == "all":
+
+        if pred_dir is None and log_dir is not None:
+            pred_dir = os.path.join(ae_algo.tx.elog.work_dir, "predictions")
+            os.makedirs(pred_dir, exist_ok=True)
+        elif pred_dir is None and log_dir is None:
+            print("Please either give a log/ output dir or a prediction dir")
+            exit(0)
 
         for f_name in os.listdir(test_dir):
             ni_file = os.path.join(test_dir, f_name)
@@ -254,6 +260,16 @@ def main(
                     target_file.write(str(sample_score))
 
     if run == "test" or run == "all":
+
+        if pred_dir is None:
+            print("Please either give a prediction dir")
+            exit(0)
+        if test_dir is None:
+            print(
+                "Please either give a test dir which contains the test samples "
+                "and for which a test_dir_label folder exists"
+            )
+            exit(0)
 
         test_dir = test_dir[:-1] if test_dir.endswith("/") else test_dir
         score = eval_dir(pred_dir=pred_dir, label_dir=test_dir + f"_label/{mode}", mode=mode)
