@@ -65,4 +65,4 @@ In the scripts folder you can find:
 
 ### Example Algorithms
 
-For _'ready to run'_ simple example algorithms checkout the example_alogs folder.  
+For _'ready to run'_ simple example algorithms checkout the [example_algos](https://github.com/MIC-DKFZ/mood/tree/master/example_algos) folder.

@@ -57,12 +57,12 @@ python algorithms/ce_vae.py -r all -o output_dir -t /data/mood/brain/toy  --mode
 
 With additional arguments:
 
-- --ce-factor, determins the 'mixing' between VAE and CE (0.0=VAE only, 1.0=CE only).
+- --ce-factor, determines the 'mixing' between VAE and CE (0.0=VAE only, 1.0=CE only).
 - --score-mode, How to determine the OoD score ("rec", "grad", "combi").
 
 #### fAnoGAN (f_ano_gan.py)
 
-A fAnoGAN algorithm build on top of improved Wasserstein GANs. Can use be used as AnoGAN only (without the encoding).
+A fAnoGAN algorithm built on top of improved Wasserstein GANs. Can use be used as AnoGAN only (without the encoding).
 
 ```
 python algorithms/f_ano_gan.py -r all -o output_dir -t /data/mood/brain/toy  --mode pixel --logger visdom -d /data/mood/brain/train_preprocessed --use-encoder
