@@ -7,7 +7,7 @@ This folder contains a few simple example OoD algorithms for the _Medical Out-of
 Install python requirements:
 
 ```
-pip install -r requirements_alogs.txt
+pip install -r requirements_algos.txt
 ```
 
 And use the data/preprocess.py script to preprocess the data (you may want to use more sophisticated preprocessing for your own submission):
