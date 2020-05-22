@@ -1,19 +1,17 @@
 import os
-import sys
 import time
 from math import ceil
 
 import click
 import numpy as np
 import torch
-import torch.distributions as dist
 from torch import optim
 from tqdm import tqdm
 from trixi.logger import PytorchExperimentLogger
 from trixi.util.config import monkey_patch_fn_args_as_config
 from trixi.util.pytorchexperimentstub import PytorchExperimentStub
 
-from example_algos.data.numpy_dataset import get_numpy2d_dataset, get_numpy3d_dataset
+from example_algos.data.numpy_dataset import get_numpy2d_dataset
 from example_algos.models.aes import AE
 from example_algos.util.nifti_io import ni_load, ni_save
 
@@ -47,16 +45,13 @@ class AE2D:
             log_dict = {
                 0: (logger),
             }
-        self.tx = PytorchExperimentStub(name="delme", base_dir=log_dir, config=fn_args_as_config, loggers=log_dict,)
+        self.tx = PytorchExperimentStub(name="ae2d", base_dir=log_dir, config=fn_args_as_config, loggers=log_dict,)
 
         cuda_available = torch.cuda.is_available()
         self.device = torch.device("cuda" if cuda_available else "cpu")
 
         self.model = AE(input_size=input_shape[1:], z_dim=z_dim, fmap_sizes=model_feature_map_sizes).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
-
-        self.vae_loss_ema = 1
-        self.theta = 1
 
         if load_path is not None:
             PytorchExperimentLogger.load_model_static(self.model, os.path.join(load_path, "ae_final.pth"))
@@ -65,10 +60,20 @@ class AE2D:
     def train(self):
 
         train_loader = get_numpy2d_dataset(
-            base_dir=self.data_dir, num_processes=16, pin_memory=True, batch_size=self.batch_size, mode="train",
+            base_dir=self.data_dir,
+            num_processes=16,
+            pin_memory=True,
+            batch_size=self.batch_size,
+            mode="train",
+            target_size=self.input_shape[2],
         )
         val_loader = get_numpy2d_dataset(
-            base_dir=self.data_dir, num_processes=8, pin_memory=True, batch_size=self.batch_size, mode="val"
+            base_dir=self.data_dir,
+            num_processes=8,
+            pin_memory=True,
+            batch_size=self.batch_size,
+            mode="val",
+            target_size=self.input_shape[2],
         )
 
         for epoch in range(self.n_epochs):
@@ -135,7 +140,6 @@ class AE2D:
 
         orig_shape = np_array.shape
         to_transforms = torch.nn.Upsample((self.input_shape[2], self.input_shape[3]), mode="bilinear")
-        from_transforms = torch.nn.Upsample((orig_shape[1], orig_shape[2]), mode="bilinear")
 
         data_tensor = torch.from_numpy(np_array).float()
         data_tensor = to_transforms(data_tensor[None])[0]
@@ -169,7 +173,7 @@ class AE2D:
 
             batch_rec = self.model(batch)
 
-            loss = torch.pow(batch - batch_rec, 2).squeeze()
+            loss = torch.pow(batch - batch_rec, 2)[:, 0, :]
             target_tensor[i * self.batch_size : (i + 1) * self.batch_size] = loss.cpu()
 
         target_tensor = from_transforms(target_tensor[None])[0]

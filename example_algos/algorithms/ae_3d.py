@@ -47,7 +47,7 @@ class AE3D:
             log_dict = {
                 0: (logger),
             }
-        self.tx = PytorchExperimentStub(name="delme", base_dir=log_dir, config=fn_args_as_config, loggers=log_dict,)
+        self.tx = PytorchExperimentStub(name="ae3d", base_dir=log_dir, config=fn_args_as_config, loggers=log_dict,)
 
         cuda_available = torch.cuda.is_available()
         self.device = torch.device("cuda" if cuda_available else "cpu")
@@ -61,9 +61,6 @@ class AE3D:
         ).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
-        self.vae_loss_ema = 1
-        self.theta = 1
-
         if load_path is not None:
             PytorchExperimentLogger.load_model_static(self.model, os.path.join(load_path, "ae_final.pth"))
             time.sleep(5)
@@ -71,10 +68,20 @@ class AE3D:
     def train(self):
 
         train_loader = get_numpy3d_dataset(
-            base_dir=self.data_dir, num_processes=16, pin_memory=False, batch_size=self.batch_size, mode="train",
+            base_dir=self.data_dir,
+            num_processes=16,
+            pin_memory=False,
+            batch_size=self.batch_size,
+            mode="train",
+            target_size=self.input_shape[2],
         )
         val_loader = get_numpy3d_dataset(
-            base_dir=self.data_dir, num_processes=8, pin_memory=False, batch_size=self.batch_size, mode="val",
+            base_dir=self.data_dir,
+            num_processes=8,
+            pin_memory=False,
+            batch_size=self.batch_size,
+            mode="val",
+            target_size=self.input_shape[2],
         )
 
         for epoch in range(self.n_epochs):
