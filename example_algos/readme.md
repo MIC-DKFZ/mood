@@ -39,7 +39,7 @@ A simple 2d autoencoder which uses the reconstruction error as OoD score:
 python algorithms/ae_2d.py -r all -o output_dir -t /data/mood/brain/toy  --mode pixel --logger visdom -d /data/mood/brain/train_preprocessed
 ```
 
-#### 3D Autoencoder (2d_ae.py)
+#### 3D Autoencoder (3d_ae.py)
 
 A simple 3d autoencoder which uses the reconstruction error as OoD score:
 
