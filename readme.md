@@ -62,3 +62,7 @@ In the scripts folder you can find:
 
 - `test_docker.py` : The script to test your docker.
 - `evalresults.py` : The script with our evaluation code.
+
+### Example Algorithms
+
+For _'ready to run'_ simple example algorithms checkout the example_alogs folder.  
