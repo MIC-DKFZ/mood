@@ -91,10 +91,11 @@ if __name__ == "__main__":
 
     print("\nPredicting brain data...")
 
+    ret = ""
     try:
         docker_str = (
             f"sudo docker run {gpu_str}-v {brain_toy_data_dir}:/mnt/data "
-            f"-v {output_brain_dir}:/mnt/pred {docker_name} sh /workspace/run_{task}_brain.sh /mnt/data /mnt/pred"
+            f"-v {output_brain_dir}:/mnt/pred --read-only {docker_name} sh /workspace/run_{task}_brain.sh /mnt/data /mnt/pred"
         )
         ret = subprocess.run(docker_str.split(" "), check=True,)
     except Exception:
@@ -107,7 +108,7 @@ if __name__ == "__main__":
     try:
         docker_str = (
             f"sudo docker run {gpu_str}-v {abdom_toy_data_dir}:/mnt/data "
-            f"-v {output_abdom_dir}:/mnt/pred {docker_name} sh /workspace/run_{task}_abdom.sh /mnt/data /mnt/pred"
+            f"-v {output_abdom_dir}:/mnt/pred --read-only {docker_name} sh /workspace/run_{task}_abdom.sh /mnt/data /mnt/pred"
         )
         ret = subprocess.run(docker_str.split(" "), check=True,)
     except Exception:
