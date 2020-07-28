@@ -185,26 +185,32 @@ def bootstrap_dir(
     return np.mean(scores)
 
 
-# if __name__ == "__main__":
-#     x1 = eval_dir(
-#         "/home/david/data/datasets_slow/mood_brain/target_pixel",
-#         "/home/david/data/datasets_slow/mood_brain/toy_label/pixel",
-#         mode="pixel",
-#     )
-#     print(x1)
+def bootstrap_list(
+    eval_lists, save_file=None, mode="pixel", base_pred_dir=None, base_label_dir=None,
+):
 
-#     x2 = eval_dir(
-#         "/home/david/data/datasets_slow/mood_brain/target_sample",
-#         "/home/david/data/datasets_slow/mood_brain/toy_label/sample",
-#         mode="sample",
-#     )
-#     print(x2)
+    scores = []
 
-#     x4 = bootstrap_dir(
-#         "/home/david/data/datasets_slow/mood_brain/target_pixel",
-#         "/home/david/data/datasets_slow/mood_brain/toy_label/pixel",
-#         save_dir="/home/david/data/datasets_slow/mood_brain/tmp",
-#         n_runs=5,
-#         seed=124,
-#     )
-#     print(x4)
+    for pl_list in eval_lists:
+
+        pred_lists, label_lists = zip(*pl_list)
+        if base_pred_dir is not None:
+            if mode == "pixel":
+                pred_lists = [os.path.join(base_pred_dir, el) for el in pred_lists]
+            if mode == "sample":
+                pred_lists = [os.path.join(base_pred_dir, el + ".txt") for el in pred_lists]
+        if base_label_dir is not None:
+            label_lists = [os.path.join(base_label_dir, el) for el in label_lists]
+
+        score = eval_list(pred_lists, label_lists, mode=mode,)
+
+        if not np.isfinite(score):
+            score = 0
+
+        scores.append(score)
+
+    if save_file is not None:
+        with open(save_file, "w") as outfile:
+            json.dump(scores, outfile)
+
+    return np.mean(scores)
