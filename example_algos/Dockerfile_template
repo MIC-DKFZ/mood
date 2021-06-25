@@ -1,0 +1,23 @@
+FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-devel
+
+# copy files
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+ADD requirements_algos.txt /workspace/
+
+RUN pip install -r /workspace/requirements_algos.txt
+
+ADD data /workspace/example_algos/data/
+ADD models /workspace/example_algos/models/
+ADD util /workspace/example_algos/util/
+ADD docker_scripts /workspace/
+RUN chmod +x /workspace/*.sh
+
+RUN mkdir /mnt/data
+RUN mkdir /mnt/pred
+ENV TMPDIR=/mnt/pred
+
+ADD algorithms /workspace/example_algos/algorithms
+ADD checkpoints/checkpoint.pth /workspace/params.pth
