@@ -1,5 +1,5 @@
 click==7.1.2
-joblib==0.14.1
+joblib==1.2.0
 monai==0.1.0
 nibabel==3.1.0
 numpy==1.18.3

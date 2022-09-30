@@ -1,4 +1,4 @@
-joblib==0.14.1
+joblib==1.2.0
 nibabel==3.1.0
 numpy==1.18.3
 packaging==20.3
