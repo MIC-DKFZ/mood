@@ -6,7 +6,7 @@ numpy==1.18.3
 packaging==20.3
 pkg-resources==0.0.0
 pyparsing==2.4.7
-scikit-learn==0.22.2.post1
+scikit-learn==1.5.0
 scipy==1.4.1
 six==1.14.0
 tensorboard==2.2.1
